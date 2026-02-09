@@ -1,0 +1,1729 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0b10" />
+  <title>Night Coach</title>
+
+  <!-- Premium-ish system font stack (fast, no external deps) -->
+  <style>
+    :root{
+      --bg0:#07080c;
+      --bg1:#0a0b10;
+      --card:#0f1220cc;
+      --card2:#0f1220;
+      --stroke:#202641;
+      --stroke2:#2a3358;
+      --text:#e9ecf6;
+      --muted:#a8b0d1;
+      --muted2:#7f88aa;
+      --good:#63f0a6;
+      --warn:#ffd27a;
+      --bad:#ff5b7a;
+
+      --accent1:#7c5cff;
+      --accent2:#22d3ee;
+      --accent3:#ff4d8d;
+
+      --r12:12px;
+      --r16:16px;
+      --r20:20px;
+
+      --shadow: 0 10px 30px rgba(0,0,0,.45);
+      --shadow2: 0 1px 0 rgba(255,255,255,.03) inset, 0 16px 40px rgba(0,0,0,.45);
+    }
+
+    * { box-sizing:border-box; }
+    html, body { height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(900px 600px at 20% 10%, rgba(124,92,255,.20), transparent 55%),
+        radial-gradient(800px 600px at 85% 20%, rgba(34,211,238,.16), transparent 55%),
+        radial-gradient(900px 700px at 50% 105%, rgba(255,77,141,.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      padding: 16px 14px 24px;
+    }
+
+    a { color: inherit; text-decoration:none; }
+    .container{ max-width: 720px; margin:0 auto; }
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 14px 14px;
+      border: 1px solid rgba(32,38,65,.65);
+      background: rgba(15,18,32,.58);
+      border-radius: var(--r20);
+      box-shadow: var(--shadow2);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 10px; z-index: 20;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      min-width: 0;
+    }
+    .logo{
+      width:38px; height:38px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(124,92,255,1), rgba(34,211,238,1));
+      box-shadow: 0 10px 24px rgba(124,92,255,.18), 0 10px 24px rgba(34,211,238,.10);
+      position: relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-35%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.38), transparent 45%);
+      transform: rotate(18deg);
+    }
+    .brand h1{
+      font-size: 16px; margin:0; letter-spacing:.2px; line-height:1.2;
+      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+    }
+    .brand .sub{
+      font-size: 12px; color: var(--muted2); margin-top:2px;
+      white-space: nowrap; overflow:hidden; text-overflow: ellipsis;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(42,51,88,.8);
+      background: rgba(10,11,16,.45);
+      color: var(--muted);
+      font-size: 12px;
+      user-select:none;
+    }
+    .dot{
+      width:8px; height:8px; border-radius:999px; background: var(--muted2);
+      box-shadow: 0 0 0 4px rgba(127,136,170,.12);
+    }
+    .dot.good{ background: var(--good); box-shadow: 0 0 0 4px rgba(99,240,166,.12); }
+    .dot.warn{ background: var(--warn); box-shadow: 0 0 0 4px rgba(255,210,122,.12); }
+    .dot.bad{ background: var(--bad); box-shadow: 0 0 0 4px rgba(255,91,122,.12); }
+
+    .grid{
+      display:grid; gap: 12px;
+      margin-top: 12px;
+    }
+
+    .card{
+      background: rgba(15,18,32,.62);
+      border: 1px solid rgba(32,38,65,.7);
+      border-radius: var(--r20);
+      box-shadow: var(--shadow2);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+
+    .cardHeader{
+      padding: 14px 14px 10px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      border-bottom: 1px solid rgba(32,38,65,.55);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+    }
+    .cardHeader h2{
+      margin:0; font-size: 14px; letter-spacing:.2px;
+    }
+    .cardHeader .hint{
+      margin-top:4px; font-size: 12px; color: var(--muted2);
+    }
+    .cardBody{ padding: 14px; }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media(min-width:560px){
+      .row.two{ grid-template-columns: 1fr 1fr; }
+      .row.three{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    label{
+      display:flex; justify-content:space-between; gap:10px;
+      font-size: 12px; color: var(--muted);
+      margin: 0 0 8px;
+      letter-spacing:.2px;
+    }
+    .labelRight{ color: var(--muted2); font-size: 11px; }
+
+    input, select, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(42,51,88,.85);
+      background: rgba(10,11,16,.55);
+      color: var(--text);
+      outline:none;
+      font-size: 15px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.03) inset;
+    }
+    textarea{ min-height: 90px; resize: vertical; }
+
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(124,92,255,.75);
+      box-shadow: 0 0 0 4px rgba(124,92,255,.18);
+    }
+
+    .chips{
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .chip{
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(42,51,88,.85);
+      background: rgba(10,11,16,.45);
+      color: var(--muted);
+      font-size: 13px;
+      user-select:none;
+      cursor:pointer;
+      transition: transform .04s ease, border-color .12s ease, background .12s ease;
+    }
+    .chip:active{ transform: scale(.99); }
+    .chip.selected{
+      color: var(--text);
+      border-color: rgba(34,211,238,.70);
+      box-shadow: 0 0 0 4px rgba(34,211,238,.12);
+      background:
+        radial-gradient(140px 60px at 40% 10%, rgba(34,211,238,.18), transparent 60%),
+        rgba(10,11,16,.35);
+    }
+
+    .btnRow{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .btn{
+      flex: 1 1 180px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(42,51,88,.9);
+      background: rgba(10,11,16,.45);
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 750;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 20px rgba(0,0,0,.22);
+      transition: transform .04s ease, filter .12s ease, border-color .12s ease;
+      min-height: 48px;
+    }
+    .btn:active{ transform: scale(.99); }
+    .btn.primary{
+      border-color: rgba(124,92,255,.65);
+      background: linear-gradient(135deg, rgba(124,92,255,.92), rgba(34,211,238,.80));
+      box-shadow: 0 12px 26px rgba(124,92,255,.22), 0 10px 24px rgba(34,211,238,.12);
+    }
+    .btn.danger{
+      border-color: rgba(255,91,122,.55);
+      background: linear-gradient(135deg, rgba(255,91,122,.92), rgba(255,77,141,.72));
+      box-shadow: 0 14px 28px rgba(255,91,122,.18);
+    }
+    .btn.ghost{
+      background: transparent;
+    }
+
+    .bigTime{
+      font-size: 52px;
+      letter-spacing: .5px;
+      font-weight: 850;
+      line-height: 1.05;
+      margin: 2px 0 8px;
+    }
+    .status{
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: .2px;
+      margin: 0 0 6px;
+    }
+    .status.good{ color: var(--good); }
+    .status.warn{ color: var(--warn); }
+    .status.bad{ color: var(--bad); }
+
+    .metaRow{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top: 10px;
+    }
+
+    .divider{
+      height:1px;
+      background: rgba(32,38,65,.55);
+      margin: 12px 0;
+    }
+
+    .planBlock{
+      border: 1px solid rgba(42,51,88,.75);
+      background: rgba(10,11,16,.38);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .planTitle{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-bottom: 8px;
+    }
+    .planTitle h3{
+      margin:0; font-size: 13px; letter-spacing:.2px;
+    }
+    .bullets{
+      margin: 0; padding-left: 18px;
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .bullets li{ margin: 6px 0; }
+    .small{
+      font-size: 12px; color: var(--muted2);
+      line-height: 1.35;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      line-height: 1.35;
+      color: #cfd5f1;
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(10,11,16,.72);
+      border: 1px solid rgba(42,51,88,.85);
+      border-radius: 999px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      display:none;
+      z-index: 50;
+    }
+
+    /* Hide sections */
+    .hidden{ display:none !important; }
+
+    /* Progress */
+    .progressWrap{
+      width: 120px;
+      height: 8px;
+      background: rgba(10,11,16,.45);
+      border: 1px solid rgba(42,51,88,.85);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .progressBar{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(124,92,255,.95), rgba(34,211,238,.85));
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div style="min-width:0;">
+          <h1>Night Coach</h1>
+          <div class="sub" id="topSub">Personal sleep-training cockpit</div>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="progressWrap" title="Setup progress" id="progressWrap">
+          <div class="progressBar" id="progressBar"></div>
+        </div>
+        <div class="pill" id="statePill" title="Session state">
+          <span class="dot" id="stateDot"></span>
+          <span id="stateText">IDLE</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- SETUP / INTAKE -->
+      <div class="card" id="intakeCard">
+        <div class="cardHeader">
+          <div>
+            <h2>Personalized intake</h2>
+            <div class="hint" id="stepHint">Step 1 of 5</div>
+          </div>
+          <div class="pill" id="stepPill">~90 seconds</div>
+        </div>
+
+        <div class="cardBody">
+          <!-- Step 1 -->
+          <div class="step" id="step1">
+            <div class="row two">
+              <div>
+                <label>Baby name <span class="labelRight">optional</span></label>
+                <input id="babyName" placeholder="Cam" />
+              </div>
+              <div>
+                <label>Night label <span class="labelRight">e.g., Day 2</span></label>
+                <input id="nightLabel" placeholder="Day 2" />
+              </div>
+            </div>
+
+            <div class="row two" style="margin-top:10px;">
+              <div>
+                <label>Age (months) <span class="labelRight">required</span></label>
+                <input id="ageMonths" inputmode="decimal" placeholder="5.5" />
+              </div>
+              <div>
+                <label>Bedtime target <span class="labelRight">optional</span></label>
+                <input id="bedtimeTarget" type="time" />
+              </div>
+            </div>
+
+            <div class="row two" style="margin-top:10px;">
+              <div>
+                <label>Typical wake time <span class="labelRight">optional</span></label>
+                <input id="wakeTarget" type="time" />
+              </div>
+              <div>
+                <label>Daycare naps <span class="labelRight">yes/no</span></label>
+                <select id="daycare">
+                  <option value="mixed">Mixed</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="btnRow">
+              <button class="btn ghost" id="loadDemoBtn" type="button">Use an example (fast)</button>
+              <button class="btn primary" id="next1" type="button">Continue</button>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step hidden" id="step2">
+            <div class="small" style="margin-bottom:10px;">How does your baby usually fall asleep at bedtime?</div>
+            <div class="chips" id="assocChips">
+              <div class="chip" data-value="nurse_to_sleep">Nurse/bottle to sleep</div>
+              <div class="chip" data-value="rock_to_sleep">Rock/bounce</div>
+              <div class="chip" data-value="pacifier">Pacifier</div>
+              <div class="chip" data-value="drowsy_awake">Placed down awake-ish</div>
+              <div class="chip" data-value="other">Other</div>
+            </div>
+
+            <div class="row two" style="margin-top:12px;">
+              <div>
+                <label>Sleep location <span class="labelRight">bedtime</span></label>
+                <select id="sleepLocation">
+                  <option value="crib">Crib</option>
+                  <option value="bassinet">Bassinet</option>
+                  <option value="bed">Adult bed</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label>Sleep suit/swaddle <span class="labelRight">optional</span></label>
+                <select id="sleepGear">
+                  <option value="none">None</option>
+                  <option value="sack">Sleep sack</option>
+                  <option value="transition">Transition suit</option>
+                  <option value="swaddle">Swaddle</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="btnRow">
+              <button class="btn" id="back2" type="button">Back</button>
+              <button class="btn primary" id="next2" type="button">Continue</button>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step hidden" id="step3">
+            <div class="row two">
+              <div>
+                <label>Night wakes needing help <span class="labelRight">avg</span></label>
+                <input id="nightWakes" inputmode="numeric" placeholder="2" />
+              </div>
+              <div>
+                <label>Feeds overnight <span class="labelRight">0–3+</span></label>
+                <select id="feedsPerNight">
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3+</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="small" style="margin:12px 0 8px;">Typical feed timing windows (tap to select)</div>
+            <div class="chips" id="feedWindowChips">
+              <div class="chip" data-value="23:00-01:00">11–1</div>
+              <div class="chip" data-value="01:00-03:00">1–3</div>
+              <div class="chip" data-value="03:00-05:00">3–5</div>
+              <div class="chip" data-value="05:00-07:00">5–7</div>
+            </div>
+
+            <div class="row two" style="margin-top:12px;">
+              <div>
+                <label>Typical feed duration <span class="labelRight">minutes</span></label>
+                <input id="feedDuration" inputmode="numeric" placeholder="10" />
+              </div>
+              <div>
+                <label>Do feeds feel “required”? <span class="labelRight">gut check</span></label>
+                <select id="feedsFeelRequired">
+                  <option value="yes">Yes</option>
+                  <option value="maybe">Maybe</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="btnRow">
+              <button class="btn" id="back3" type="button">Back</button>
+              <button class="btn primary" id="next3" type="button">Continue</button>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step hidden" id="step4">
+            <div class="row two">
+              <div>
+                <label>Nights tried so far <span class="labelRight">0–14</span></label>
+                <input id="nightsTried" inputmode="numeric" placeholder="2" />
+              </div>
+              <div>
+                <label>Method used <span class="labelRight">so far</span></label>
+                <select id="methodUsed">
+                  <option value="none">None yet</option>
+                  <option value="ferber" selected>Ferber</option>
+                  <option value="cio">Extinction (CIO)</option>
+                  <option value="mixed">A mix</option>
+                  <option value="pickup">Pick up / put down</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row two" style="margin-top:12px;">
+              <div>
+                <label>Longest crying stretch <span class="labelRight">minutes</span></label>
+                <input id="longestCry" inputmode="numeric" placeholder="90" />
+              </div>
+              <div>
+                <label>Resets / picked up <span class="labelRight">frequency</span></label>
+                <select id="resets">
+                  <option value="never">Never</option>
+                  <option value="sometimes">Sometimes</option>
+                  <option value="often" selected>Often</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <label>Biggest reason you stopped <span class="labelRight">optional</span></label>
+              <input id="stopReason" placeholder="Too intense / no progress / schedule / etc." />
+            </div>
+
+            <div class="divider"></div>
+            <div class="btnRow">
+              <button class="btn" id="back4" type="button">Back</button>
+              <button class="btn primary" id="next4" type="button">Continue</button>
+            </div>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="step hidden" id="step5">
+            <div class="row two">
+              <div>
+                <label>Preference tonight <span class="labelRight">style</span></label>
+                <select id="stylePref">
+                  <option value="ferber" selected>Ferber check-ins</option>
+                  <option value="minimal">Minimal check-ins</option>
+                  <option value="cio">No checks (CIO)</option>
+                  <option value="gentle">Gentle (no extinction)</option>
+                </select>
+              </div>
+              <div>
+                <label>Max crying you’ll tolerate <span class="labelRight">optional</span></label>
+                <input id="maxCry" inputmode="numeric" placeholder="90" />
+              </div>
+            </div>
+
+            <div class="row two" style="margin-top:12px;">
+              <div>
+                <label>Alerts <span class="labelRight">haptics</span></label>
+                <select id="alertMode">
+                  <option value="vibrate">Vibrate only</option>
+                  <option value="vibrate+beep">Vibrate + beep</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+              <div>
+                <label>Keep screen awake <span class="labelRight">recommended</span></label>
+                <select id="wakeLockPref">
+                  <option value="on" selected>On (if supported)</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="small" style="margin:12px 0 8px;">Any red flags today?</div>
+            <div class="chips" id="redFlagChips">
+              <div class="chip" data-value="none">None</div>
+              <div class="chip" data-value="sick">Sick/fever</div>
+              <div class="chip" data-value="teething">Teething (bad)</div>
+              <div class="chip" data-value="travel">Travel/jet lag</div>
+              <div class="chip" data-value="daycare_start">New daycare transition</div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="btnRow">
+              <button class="btn" id="back5" type="button">Back</button>
+              <button class="btn primary" id="generateBtn" type="button">Generate plan</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PLAN -->
+      <div class="card hidden" id="planCard">
+        <div class="cardHeader">
+          <div>
+            <h2 id="planTitle">Tonight’s plan</h2>
+            <div class="hint" id="planSubtitle">Built from your intake</div>
+          </div>
+          <div class="pill" id="planBadge">READY</div>
+        </div>
+        <div class="cardBody" id="planBody">
+          <!-- injected -->
+        </div>
+      </div>
+
+      <!-- RUNNER -->
+      <div class="card hidden" id="runnerCard">
+        <div class="cardHeader">
+          <div>
+            <h2>Session runner</h2>
+            <div class="hint" id="runnerHint">One screen. No math.</div>
+          </div>
+          <div class="pill" id="runnerPill">LIVE</div>
+        </div>
+
+        <div class="cardBody">
+          <div class="small" id="runnerHeadline">Session running</div>
+          <div class="bigTime" id="countdown">00:00</div>
+          <div class="status good" id="statusText">WAIT</div>
+          <div class="small" id="nextAtText">Next check-in at —</div>
+
+          <div class="metaRow">
+            <div class="pill"><span class="dot good"></span><span id="elapsedPill">Elapsed: 0:00</span></div>
+            <div class="pill"><span class="dot"></span><span id="intervalPill">Interval: 0</span></div>
+            <div class="pill"><span class="dot warn"></span><span id="modePill">Mode: —</span></div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="btnRow">
+            <button class="btn primary" id="didCheckinBtn" type="button">Did check-in</button>
+            <button class="btn" id="babyAsleepBtn" type="button">Baby asleep</button>
+          </div>
+
+          <div class="btnRow" style="margin-top:10px;">
+            <button class="btn" id="pauseBtn" type="button">Pause</button>
+            <button class="btn danger" id="resetBtn" type="button">Reset (picked up / restart)</button>
+          </div>
+
+          <div class="btnRow" style="margin-top:10px;">
+            <button class="btn" id="exportBtn" type="button">Export log</button>
+            <button class="btn" id="wakeLockBtn" type="button">Keep screen awake: OFF</button>
+          </div>
+
+          <div class="btnRow" style="margin-top:10px;">
+            <button class="btn danger" id="endBtn" type="button">End session</button>
+            <button class="btn ghost" id="editPlanBtn" type="button">Edit intake</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="planBlock">
+            <div class="planTitle">
+              <h3>Check-in script</h3>
+              <span class="pill" id="scriptPill">30–60s</span>
+            </div>
+            <div class="small" id="checkinScriptText">
+              Calm voice, brief reassurance, no pickup (unless your plan says otherwise). Leave the room confidently.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="card" id="logCard">
+        <div class="cardHeader">
+          <div>
+            <h2>Log</h2>
+            <div class="hint">Automatic timestamps. Tap export to copy.</div>
+          </div>
+          <div class="btnRow" style="flex:0 0 auto; gap:8px;">
+            <button class="btn" style="flex:0 0 auto; padding:10px 12px; min-height:auto;" id="clearLogBtn" type="button">Clear</button>
+          </div>
+        </div>
+        <div class="cardBody">
+          <div class="mono" id="logView">(no log yet)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  // -----------------------------
+  // Storage
+  // -----------------------------
+  const KEY = "nightCoach.premium.v1";
+  const $ = (id) => document.getElementById(id);
+
+  function loadState(){
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+    catch { return {}; }
+  }
+  function saveState(s){
+    localStorage.setItem(KEY, JSON.stringify(s));
+  }
+
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+  const now = () => new Date();
+  const pad2 = (n) => String(n).padStart(2,"0");
+
+  function fmtClock(d){
+    let h = d.getHours(), m = d.getMinutes();
+    const ampm = h >= 12 ? "PM" : "AM";
+    h = h % 12; if (h === 0) h = 12;
+    return `${h}:${pad2(m)} ${ampm}`;
+  }
+  function fmtMMSS(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const mm = Math.floor(s/60);
+    const ss = s % 60;
+    return `${pad2(mm)}:${pad2(ss)}`;
+  }
+  function fmtElapsed(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    const h = Math.floor(s/3600);
+    const m = Math.floor((s%3600)/60);
+    const sec = s % 60;
+    return h>0 ? `${h}:${pad2(m)}:${pad2(sec)}` : `${m}:${pad2(sec)}`;
+  }
+
+  function toast(msg){
+    const el = $("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.style.display = "none", 1800);
+  }
+
+  function parseNum(v, fallback=null){
+    const n = Number(String(v).trim());
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function parseIntervals(str){
+    const arr = String(str || "")
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean)
+      .map(x => Number(x))
+      .filter(x => Number.isFinite(x) && x > 0);
+    return arr.length ? arr : [5,10,12,15];
+  }
+
+  function uniq(arr){
+    return Array.from(new Set(arr));
+  }
+
+  // -----------------------------
+  // Default state
+  // -----------------------------
+  let state = loadState();
+  state.intake = state.intake || {
+    babyName: "",
+    nightLabel: "",
+    ageMonths: "",
+    bedtimeTarget: "",
+    wakeTarget: "",
+    daycare: "mixed",
+
+    bedtimeAssoc: "nurse_to_sleep",
+    sleepLocation: "crib",
+    sleepGear: "none",
+
+    nightWakes: "2",
+    feedsPerNight: "2",
+    feedWindows: [],
+    feedDuration: "10",
+    feedsFeelRequired: "yes",
+
+    nightsTried: "0",
+    methodUsed: "none",
+    longestCry: "",
+    resets: "never",
+    stopReason: "",
+
+    stylePref: "ferber",
+    maxCry: "",
+    alertMode: "vibrate",
+    wakeLockPref: "on",
+    redFlags: ["none"]
+  };
+
+  state.plan = state.plan || null;
+
+  state.session = state.session || {
+    status: "idle", // idle|running|paused
+    startedAt: null,
+    pausedAt: null,
+    pauseAccumMs: 0,
+    checkIndex: 0,
+    nextDueAt: null,
+    log: []
+  };
+
+  // -----------------------------
+  // Logging
+  // -----------------------------
+  function logEvent(type, note=""){
+    const t = now();
+    const baby = (state.intake.babyName || "").trim();
+    const night = (state.intake.nightLabel || "").trim();
+    const prefix = [fmtClock(t), baby ? `(${baby})` : "", night ? `[${night}]` : ""].filter(Boolean).join(" ");
+    const line = `${prefix} — ${type}${note ? `: ${note}` : ""}`;
+    state.session.log = state.session.log || [];
+    state.session.log.push(line);
+    saveState(state);
+    renderLog();
+  }
+
+  function renderLog(){
+    const lines = state.session.log || [];
+    $("logView").textContent = lines.length ? lines.slice().reverse().join("\n") : "(no log yet)";
+  }
+
+  // -----------------------------
+  // Chip selection
+  // -----------------------------
+  function setupSingleSelectChips(containerId, getValue, setValue){
+    const container = $(containerId);
+    container.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if(!chip) return;
+      const val = chip.getAttribute("data-value");
+      setValue(val);
+      Array.from(container.querySelectorAll(".chip")).forEach(c => c.classList.toggle("selected", c.getAttribute("data-value") === getValue()));
+    });
+    Array.from(container.querySelectorAll(".chip")).forEach(c => c.classList.toggle("selected", c.getAttribute("data-value") === getValue()));
+  }
+
+  function setupMultiSelectChips(containerId, getArr, setArr, specialNoneValue=null){
+    const container = $(containerId);
+    container.addEventListener("click", (e) => {
+      const chip = e.target.closest(".chip");
+      if(!chip) return;
+      const val = chip.getAttribute("data-value");
+      let arr = getArr().slice();
+
+      if (specialNoneValue && val === specialNoneValue){
+        arr = [specialNoneValue];
+      } else if (specialNoneValue && arr.includes(specialNoneValue)){
+        arr = arr.filter(x => x !== specialNoneValue);
+      }
+
+      if (arr.includes(val)) arr = arr.filter(x => x !== val);
+      else arr.push(val);
+
+      if (specialNoneValue && arr.length === 0) arr = [specialNoneValue];
+
+      setArr(uniq(arr));
+      Array.from(container.querySelectorAll(".chip")).forEach(c => c.classList.toggle("selected", getArr().includes(c.getAttribute("data-value"))));
+    });
+    Array.from(container.querySelectorAll(".chip")).forEach(c => c.classList.toggle("selected", getArr().includes(c.getAttribute("data-value"))));
+  }
+
+  // -----------------------------
+  // Intake steps nav
+  // -----------------------------
+  let currentStep = 1;
+  const totalSteps = 5;
+
+  function showStep(n){
+    currentStep = n;
+    for(let i=1;i<=totalSteps;i++){
+      $("step"+i).classList.toggle("hidden", i !== n);
+    }
+    $("stepHint").textContent = `Step ${n} of ${totalSteps}`;
+    const pct = Math.round((n-1)/(totalSteps-1)*100);
+    $("progressBar").style.width = `${pct}%`;
+  }
+
+  function validateStep1(){
+    const age = parseNum($("ageMonths").value, null);
+    if(age === null || age <= 0){
+      toast("Add age in months (e.g., 5.5)");
+      return false;
+    }
+    return true;
+  }
+
+  // -----------------------------
+  // Plan generator (deterministic rules)
+  // -----------------------------
+  function classifyPatterns(intake){
+    const patterns = [];
+
+    const nightsTried = parseNum(intake.nightsTried, 0) || 0;
+    const longestCry = parseNum(intake.longestCry, 0) || 0;
+
+    if (nightsTried >= 2 && (intake.resets === "sometimes" || intake.resets === "often")) patterns.push("inconsistent_resets");
+    if (longestCry > 60 && (intake.methodUsed === "ferber" || intake.methodUsed === "mixed")) patterns.push("checks_may_ramp");
+    if (intake.bedtimeAssoc === "nurse_to_sleep" || intake.bedtimeAssoc === "rock_to_sleep" || intake.bedtimeAssoc === "pacifier") patterns.push("sleep_association");
+    if (intake.daycare === "yes" || intake.daycare === "mixed") patterns.push("schedule_variability");
+    if (nightsTried <= 2) patterns.push("not_enough_runway");
+
+    // Red flags
+    const red = intake.redFlags || ["none"];
+    if (!red.includes("none")) patterns.push("red_flags_today");
+
+    return uniq(patterns);
+  }
+
+  function chooseMethod(intake, ageMonths, patterns){
+    if (ageMonths < 4) return "gentle";
+    if (intake.stylePref === "cio") return "cio";
+    if (intake.stylePref === "gentle") return "gentle";
+    if (intake.stylePref === "minimal") return "ferber_minimal";
+    return "ferber";
+  }
+
+  function chooseIntervals(method, ageMonths, patterns, nightsTried){
+    // Defaults by age band
+    let base;
+    if (ageMonths < 4){
+      return [];
+    } else if (ageMonths < 6){
+      base = [3,5,10,10,12,12];
+    } else if (ageMonths < 9){
+      base = [5,10,12,15,15];
+    } else {
+      base = [10,15,20,20];
+    }
+
+    // Adjustments
+    if (method === "ferber_minimal") base = [10,15,20];
+    if (patterns.includes("checks_may_ramp")) base = [5,10,12,15];
+    if (method === "cio") base = []; // no check-ins
+
+    // If they've already tried a few nights and want more space, bump early intervals
+    if (nightsTried >= 3 && base.length){
+      base = base.map((x,i) => (i < 2 ? Math.min(x+2, 12) : x));
+    }
+
+    return base;
+  }
+
+  function buildBedtimeScript(intake, method){
+    const assoc = intake.bedtimeAssoc;
+    const steps = [];
+
+    steps.push("Start wind-down ~45–60 min before target bedtime.");
+    steps.push("Feed early in the routine (aim to finish 10–15 min before put-down).");
+    steps.push("Diaper + pajamas + sleep sack, then lights low + sound machine on.");
+    steps.push("Book/song (same 2–3 minutes every night).");
+    steps.push("Put down in crib calm + awake-ish. Say your exact phrase, then leave.");
+
+    if (assoc === "nurse_to_sleep" || assoc === "rock_to_sleep"){
+      steps.push("Key rule: bedtime help ends at put-down—no rocking/nursing back to sleep after you leave.");
+    }
+    if (method === "cio"){
+      steps.push("No check-ins unless there’s a safety issue. You’re aiming for consistency.");
+    } else if (method === "ferber_minimal"){
+      steps.push("Only do check-ins when prompted. Keep them brief and boring.");
+    } else if (method === "ferber"){
+      steps.push("Follow the check-in timer. Each check-in is short, calm, and consistent.");
+    }
+    return steps;
+  }
+
+  function buildCheckinScript(intake, patterns){
+    // If inconsistency is the issue: be extra clear
+    if (patterns.includes("inconsistent_resets")){
+      return "30–45 seconds. Calm voice. Hand on chest / gentle pat. No pickup. No rocking. Leave while still awake.";
+    }
+    return "30–60 seconds. Calm voice. Quick reassurance. No pickup (unless you choose a defined reset rule). Leave confidently.";
+  }
+
+  function buildWakeRules(intake, method, patterns){
+    const rules = [];
+
+    if (method === "gentle"){
+      rules.push("Tonight is gentle mode: respond consistently, but avoid major changes. Focus on routine + earlier bedtime.");
+      rules.push("If crying escalates, soothe in crib first (pat/shush). If needed, pick up to calm, then put down.");
+      return rules;
+    }
+
+    rules.push("For non-feed wakes: start the timer immediately and follow the same method as bedtime.");
+
+    if (method === "cio"){
+      rules.push("No check-ins during wakes (unless safety). Consistency is the whole point.");
+    } else {
+      rules.push("Check-in only at prompted times. Don’t restart the interval unless you fully reset.");
+    }
+
+    if (patterns.includes("inconsistent_resets")){
+      rules.push("Reset rule (to avoid mixed signals): only reset if you choose it *before* the night starts (e.g., after X minutes). Otherwise, stick to the timer.");
+    } else {
+      rules.push("If you accidentally intervene, hit Reset and continue from there—don’t improvise new rules mid-wake.");
+    }
+
+    if (patterns.includes("schedule_variability")){
+      rules.push("If daytime naps were chaotic, consider an earlier bedtime and keep the plan the same—don’t change multiple variables tonight.");
+    }
+
+    return rules;
+  }
+
+  function buildFeedRules(intake, ageMonths){
+    const feeds = parseNum(intake.feedsPerNight, 0) || 0;
+    const windows = (intake.feedWindows || []).filter(w => w !== "none");
+    const dur = parseNum(intake.feedDuration, null);
+
+    const rules = [];
+
+    if (ageMonths < 4){
+      rules.push("Feeding is responsive at this age. Don’t use extinction methods.");
+      return rules;
+    }
+
+    if (feeds === 0){
+      rules.push("No scheduled feeds: treat all wakes with your method.");
+      return rules;
+    }
+
+    if (feeds === 1){
+      if (windows.length){
+        rules.push(`Keep 1 planned feed in the window ${windows[0]}. All other wakes = method.`);
+      } else {
+        rules.push("Keep 1 planned feed (pick a window like 12–2). All other wakes = method.");
+      }
+      if (dur) rules.push(`If you want to wean gradually, shorten that feed by ~1–2 minutes every 2–3 nights.`);
+      return rules;
+    }
+
+    // 2+ feeds
+    if (windows.length){
+      rules.push(`For now, keep feeds within your selected windows (${windows.join(", ")}). Outside those windows = method.`);
+    } else {
+      rules.push("For now, keep feeds in predictable windows (e.g., after midnight). Outside windows = method.");
+    }
+
+    rules.push("Important: bedtime feed should end before put-down so feeding isn’t the ‘sleep switch.’");
+    if (dur) rules.push(`Your typical duration is ~${dur} min. If you want to reduce, shorten by 1–2 min every 2–3 nights or push the first feed later gradually.`);
+    return rules;
+  }
+
+  function successMetrics(intake){
+    const metrics = [];
+    metrics.push("Night 1–2: you’re mostly measuring consistency (not perfection).");
+    metrics.push("Progress looks like: shorter crying peaks, fewer full wake-ups, or longer first sleep stretch.");
+    metrics.push("If it’s wildly worse by Night 3 with perfect consistency, adjust intervals or check-in style—not the whole routine.");
+    return metrics;
+  }
+
+  function generatePlan(){
+    const intake = state.intake;
+    const ageMonths = parseNum(intake.ageMonths, 0) || 0;
+    const nightsTried = parseNum(intake.nightsTried, 0) || 0;
+    const patterns = classifyPatterns(intake);
+    const method = chooseMethod(intake, ageMonths, patterns);
+    const intervals = chooseIntervals(method, ageMonths, patterns, nightsTried);
+
+    // Friendly description
+    const methodLabel =
+      method === "gentle" ? "Gentle (no extinction)" :
+      method === "cio" ? "CIO (no checks)" :
+      method === "ferber_minimal" ? "Ferber (minimal checks)" :
+      "Ferber (standard)";
+
+    // Make “interval string” for display and for runner logic
+    const intervalsStr = intervals.length ? intervals.join(", ") : "—";
+
+    // Build plan sections
+    const bedtimeSteps = buildBedtimeScript(intake, method);
+    const checkScript = buildCheckinScript(intake, patterns);
+    const wakeRules = buildWakeRules(intake, method, patterns);
+    const feedRules = buildFeedRules(intake, ageMonths);
+    const metrics = successMetrics(intake);
+
+    const plan = {
+      meta: {
+        createdAt: now().toISOString(),
+        babyName: intake.babyName || "",
+        nightLabel: intake.nightLabel || "",
+        ageMonths,
+        method,
+        methodLabel,
+        patterns,
+      },
+      schedule: {
+        bedtimeTarget: intake.bedtimeTarget || "",
+        wakeTarget: intake.wakeTarget || "",
+        daycare: intake.daycare || "mixed",
+      },
+      runner: {
+        alertMode: intake.alertMode || "vibrate",
+        wakeLockPref: intake.wakeLockPref || "off",
+        checkInMinutes: intervals,
+      },
+      copy: {
+        bedtimeSteps,
+        checkinScript: checkScript,
+        wakeRules,
+        feedRules,
+        successMetrics: metrics,
+        intervalsStr
+      }
+    };
+
+    state.plan = plan;
+    saveState(state);
+    renderPlan();
+    toast("Plan generated");
+  }
+
+  function planCardBlock(title, items){
+    const li = items.map(x => `<li>${escapeHtml(x)}</li>`).join("");
+    return `
+      <div class="planBlock" style="margin-bottom:12px;">
+        <div class="planTitle">
+          <h3>${escapeHtml(title)}</h3>
+          <span class="pill">Tap-to-run</span>
+        </div>
+        <ul class="bullets">${li}</ul>
+      </div>
+    `;
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function renderPlan(){
+    if (!state.plan){
+      $("planCard").classList.add("hidden");
+      return;
+    }
+
+    const p = state.plan;
+    const baby = p.meta.babyName ? `${p.meta.babyName} — ` : "";
+    const night = p.meta.nightLabel ? `${p.meta.nightLabel}` : "Tonight";
+    $("planTitle").textContent = `${baby}${night} plan`;
+    $("planSubtitle").textContent = `${p.meta.methodLabel} • Intervals: ${p.copy.intervalsStr}`;
+
+    const patternsNice = p.meta.patterns.length ? p.meta.patterns.map(prettyPattern).join(" • ") : "Standard";
+    $("planBadge").textContent = patternsNice === "Standard" ? "STANDARD" : "TAILORED";
+
+    const blocks = [];
+    blocks.push(planCardBlock("Bedtime flow", p.copy.bedtimeSteps));
+    blocks.push(planCardBlock("Night wakes", p.copy.wakeRules));
+    blocks.push(planCardBlock("Feeding rules", p.copy.feedRules.length ? p.copy.feedRules : ["No specific feed rules selected."]));
+    blocks.push(planCardBlock("How to judge progress", p.copy.successMetrics));
+
+    const intervalsLine = p.runner.checkInMinutes.length
+      ? `<div class="small">Check-in intervals (minutes): <b>${escapeHtml(p.copy.intervalsStr)}</b></div>`
+      : `<div class="small">Check-ins: <b>none</b> (CIO mode)</div>`;
+
+    $("planBody").innerHTML = `
+      ${intervalsLine}
+      <div class="divider"></div>
+      ${blocks.join("")}
+      <div class="btnRow" style="margin-top:12px;">
+        <button class="btn primary" id="startSessionBtn" type="button">Start session</button>
+        <button class="btn" id="savePlanBtn" type="button">Save</button>
+      </div>
+      <div class="small" style="margin-top:10px;">
+        Pro tip: keep the app open during a session so the timer stays accurate on iPhone.
+      </div>
+    `;
+
+    $("planCard").classList.remove("hidden");
+
+    // Hook buttons inside injected HTML
+    $("startSessionBtn").addEventListener("click", startSession);
+    $("savePlanBtn").addEventListener("click", () => { saveState(state); toast("Saved"); logEvent("Plan saved"); });
+  }
+
+  function prettyPattern(p){
+    const map = {
+      inconsistent_resets: "Resets causing mixed signals",
+      checks_may_ramp: "Checks may be ramping crying",
+      sleep_association: "Sleep association present",
+      schedule_variability: "Schedule variability",
+      not_enough_runway: "Early attempts (needs consistency)",
+      red_flags_today: "Red flags today (be cautious)"
+    };
+    return map[p] || p;
+  }
+
+  // -----------------------------
+  // Runner session logic
+  // -----------------------------
+  let tickTimer = null;
+  let dueFiredFor = null;
+  let wakeLock = null;
+
+  function setStatePill(status){
+    $("stateText").textContent = status.toUpperCase();
+    const dot = $("stateDot");
+    dot.classList.remove("good","warn","bad");
+    dot.classList.add(status === "running" ? "good" : status === "paused" ? "warn" : "");
+  }
+
+  function computeElapsedMs(){
+    if (!state.session.startedAt) return 0;
+    const start = new Date(state.session.startedAt).getTime();
+    if (state.session.status === "paused" && state.session.pausedAt){
+      const pausedAt = new Date(state.session.pausedAt).getTime();
+      return pausedAt - start - (state.session.pauseAccumMs || 0);
+    }
+    return now().getTime() - start - (state.session.pauseAccumMs || 0);
+  }
+
+  function getNextIntervalMinutes(idx){
+    const arr = (state.plan && state.plan.runner && state.plan.runner.checkInMinutes) ? state.plan.runner.checkInMinutes : [];
+    if (!arr.length) return null;
+    if (idx < arr.length) return arr[idx];
+    return arr[arr.length-1]; // repeat last
+  }
+
+  function scheduleNextDue(fromTime){
+    const idx = state.session.checkIndex || 0;
+    const mins = getNextIntervalMinutes(idx);
+    if (mins === null){
+      state.session.nextDueAt = null;
+      return;
+    }
+    const due = new Date(fromTime.getTime() + mins*60*1000);
+    state.session.nextDueAt = due.toISOString();
+    dueFiredFor = null;
+  }
+
+  async function alertDue(){
+    const mode = (state.plan && state.plan.runner && state.plan.runner.alertMode) ? state.plan.runner.alertMode : "vibrate";
+    if (mode === "none") return;
+
+    if (navigator.vibrate) navigator.vibrate([200,80,200,80,200]);
+
+    if (mode === "vibrate+beep"){
+      try{
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = "sine";
+        o.frequency.value = 880;
+        g.gain.value = 0.02;
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        setTimeout(() => { o.stop(); ctx.close(); }, 140);
+      }catch{}
+    }
+
+    if ("Notification" in window){
+      try{
+        if (Notification.permission === "default") await Notification.requestPermission();
+        if (Notification.permission === "granted"){
+          new Notification("Check-in due", { body: "Do your check-in now." });
+        }
+      }catch{}
+    }
+  }
+
+  function updateRunnerUI(){
+    const status = state.session.status || "idle";
+    setStatePill(status);
+
+    const runnerVisible = (status === "running" || status === "paused");
+    $("runnerCard").classList.toggle("hidden", !runnerVisible);
+    $("intakeCard").classList.toggle("hidden", runnerVisible);
+    $("planCard").classList.toggle("hidden", runnerVisible);
+
+    if (!runnerVisible) return;
+
+    const elapsedMs = computeElapsedMs();
+    $("elapsedPill").textContent = `Elapsed: ${fmtElapsed(elapsedMs)}`;
+
+    const modeLabel = (state.plan && state.plan.meta && state.plan.meta.methodLabel) ? state.plan.meta.methodLabel : "—";
+    $("modePill").textContent = `Mode: ${modeLabel}`;
+
+    const idx = state.session.checkIndex || 0;
+    $("intervalPill").textContent = `Interval: ${idx + 1}`;
+
+    const dueIso = state.session.nextDueAt;
+    let dueMs = 0;
+    let nextAt = "—";
+    if (dueIso){
+      const dueAt = new Date(dueIso);
+      dueMs = dueAt.getTime() - now().getTime();
+      nextAt = fmtClock(dueAt);
+    }
+
+    // CIO mode: show elapsed only
+    const hasChecks = !!dueIso;
+
+    if (!hasChecks){
+      $("countdown").textContent = fmtElapsed(elapsedMs);
+      $("nextAtText").textContent = "No check-ins (CIO). Use Elapsed as your anchor.";
+      $("didCheckinBtn").textContent = "Log reassurance";
+    } else {
+      $("countdown").textContent = fmtMMSS(dueMs);
+      $("nextAtText").textContent = `Next check-in at ${nextAt}`;
+      $("didCheckinBtn").textContent = "Did check-in";
+    }
+
+    // Status text
+    if (status === "paused"){
+      $("statusText").textContent = "PAUSED";
+      $("statusText").className = "status warn";
+      $("pauseBtn").textContent = "Resume";
+      return;
+    }
+
+    $("pauseBtn").textContent = "Pause";
+
+    const isDue = hasChecks && dueMs <= 0;
+    if (isDue){
+      $("statusText").textContent = "CHECK-IN NOW";
+      $("statusText").className = "status bad";
+    } else {
+      $("statusText").textContent = "WAIT";
+      $("statusText").className = "status good";
+    }
+
+    // fire alert once per due
+    if (status === "running" && isDue && dueIso && dueFiredFor !== dueIso){
+      dueFiredFor = dueIso;
+      alertDue();
+    }
+  }
+
+  function startTicking(){
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = setInterval(updateRunnerUI, 250);
+    updateRunnerUI();
+  }
+
+  function stopTicking(){
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = null;
+  }
+
+  function startSession(){
+    if (!state.plan){
+      toast("Generate a plan first");
+      return;
+    }
+    const t = now();
+    state.session.status = "running";
+    state.session.startedAt = t.toISOString();
+    state.session.pausedAt = null;
+    state.session.pauseAccumMs = 0;
+    state.session.checkIndex = 0;
+    scheduleNextDue(t);
+    saveState(state);
+
+    $("topSub").textContent = "Session running — keep this screen open";
+    $("checkinScriptText").textContent = state.plan.copy.checkinScript || "Keep it brief.";
+    $("scriptPill").textContent = (state.plan.meta.method === "cio") ? "no checks" : "30–60s";
+
+    logEvent("Session started", state.plan.meta.methodLabel);
+    startTicking();
+
+    // Wake Lock preference
+    if (state.plan.runner.wakeLockPref === "on"){
+      requestWakeLock();
+    }
+  }
+
+  function togglePause(){
+    if (state.session.status === "running"){
+      state.session.status = "paused";
+      state.session.pausedAt = now().toISOString();
+      saveState(state);
+      logEvent("Paused");
+    } else if (state.session.status === "paused"){
+      const pausedAt = new Date(state.session.pausedAt).getTime();
+      const delta = now().getTime() - pausedAt;
+      state.session.pauseAccumMs = (state.session.pauseAccumMs || 0) + delta;
+      state.session.status = "running";
+      state.session.pausedAt = null;
+      saveState(state);
+      logEvent("Resumed");
+    }
+    updateRunnerUI();
+  }
+
+  function didCheckin(){
+    if (state.session.status !== "running") return;
+
+    const cio = state.plan && state.plan.meta && state.plan.meta.method === "cio";
+    if (cio){
+      logEvent("Reassurance logged", "Brief + calm");
+      toast("Logged");
+      return;
+    }
+
+    const idx = state.session.checkIndex || 0;
+    logEvent("Check-in", `#${idx+1}`);
+    state.session.checkIndex = idx + 1;
+    scheduleNextDue(now());
+    saveState(state);
+    updateRunnerUI();
+  }
+
+  function babyAsleep(){
+    if (state.session.status === "idle") return;
+    logEvent("Baby asleep");
+    toast("Nice.");
+  }
+
+  function resetSession(){
+    if (state.session.status === "idle") return;
+    const t = now();
+    state.session.startedAt = t.toISOString();
+    state.session.pausedAt = null;
+    state.session.pauseAccumMs = 0;
+    state.session.checkIndex = 0;
+    scheduleNextDue(t);
+    state.session.status = "running";
+    saveState(state);
+    logEvent("RESET", "Picked up / restart from now");
+    updateRunnerUI();
+    toast("Reset");
+  }
+
+  function endSession(){
+    if (state.session.status === "idle") return;
+    logEvent("Session ended");
+    state.session.status = "idle";
+    state.session.startedAt = null;
+    state.session.pausedAt = null;
+    state.session.pauseAccumMs = 0;
+    state.session.checkIndex = 0;
+    state.session.nextDueAt = null;
+    saveState(state);
+    stopTicking();
+    $("topSub").textContent = "Personal sleep-training cockpit";
+    updateRunnerUI();
+    toast("Ended");
+  }
+
+  async function exportLog(){
+    const lines = state.session.log || [];
+    const out = lines.join("\n");
+    try{
+      await navigator.clipboard.writeText(out);
+      toast("Copied to clipboard");
+      logEvent("Exported log");
+    }catch{
+      prompt("Copy your log:", out);
+    }
+  }
+
+  function clearLog(){
+    state.session.log = [];
+    saveState(state);
+    renderLog();
+    toast("Cleared");
+  }
+
+  // -----------------------------
+  // Wake Lock
+  // -----------------------------
+  async function requestWakeLock(){
+    if (!("wakeLock" in navigator)){
+      $("wakeLockBtn").textContent = "Keep screen awake: N/A";
+      return;
+    }
+    try{
+      if (!wakeLock){
+        wakeLock = await navigator.wakeLock.request("screen");
+        $("wakeLockBtn").textContent = "Keep screen awake: ON";
+        logEvent("Wake Lock", "ON");
+        wakeLock.addEventListener("release", () => {
+          wakeLock = null;
+          $("wakeLockBtn").textContent = "Keep screen awake: OFF";
+          logEvent("Wake Lock", "OFF");
+        });
+      }
+    }catch(e){
+      $("wakeLockBtn").textContent = "Keep screen awake: OFF";
+    }
+  }
+
+  async function toggleWakeLock(){
+    if (!("wakeLock" in navigator)){
+      toast("Wake Lock not supported here");
+      return;
+    }
+    try{
+      if (!wakeLock){
+        await requestWakeLock();
+      } else {
+        await wakeLock.release();
+        wakeLock = null;
+        $("wakeLockBtn").textContent = "Keep screen awake: OFF";
+        logEvent("Wake Lock", "OFF");
+      }
+    }catch(e){
+      toast("Wake Lock error");
+    }
+  }
+
+  // -----------------------------
+  // Hydration: load intake values into UI
+  // -----------------------------
+  function hydrateIntakeUI(){
+    const i = state.intake;
+
+    $("babyName").value = i.babyName || "";
+    $("nightLabel").value = i.nightLabel || "";
+    $("ageMonths").value = i.ageMonths || "";
+    $("bedtimeTarget").value = i.bedtimeTarget || "";
+    $("wakeTarget").value = i.wakeTarget || "";
+    $("daycare").value = i.daycare || "mixed";
+
+    $("sleepLocation").value = i.sleepLocation || "crib";
+    $("sleepGear").value = i.sleepGear || "none";
+
+    $("nightWakes").value = i.nightWakes || "2";
+    $("feedsPerNight").value = i.feedsPerNight || "2";
+    $("feedDuration").value = i.feedDuration || "10";
+    $("feedsFeelRequired").value = i.feedsFeelRequired || "yes";
+
+    $("nightsTried").value = i.nightsTried || "0";
+    $("methodUsed").value = i.methodUsed || "none";
+    $("longestCry").value = i.longestCry || "";
+    $("resets").value = i.resets || "never";
+    $("stopReason").value = i.stopReason || "";
+
+    $("stylePref").value = i.stylePref || "ferber";
+    $("maxCry").value = i.maxCry || "";
+    $("alertMode").value = i.alertMode || "vibrate";
+    $("wakeLockPref").value = i.wakeLockPref || "on";
+
+    // chips
+    setupSingleSelectChips("assocChips",
+      () => state.intake.bedtimeAssoc,
+      (v) => { state.intake.bedtimeAssoc = v; saveState(state); }
+    );
+
+    setupMultiSelectChips("feedWindowChips",
+      () => state.intake.feedWindows || [],
+      (arr) => { state.intake.feedWindows = arr; saveState(state); },
+      null
+    );
+
+    // if no feed windows selected, keep empty (fine)
+    setupMultiSelectChips("redFlagChips",
+      () => state.intake.redFlags || ["none"],
+      (arr) => { state.intake.redFlags = arr; saveState(state); },
+      "none"
+    );
+
+    // Pre-select bedtimeAssoc chip
+    Array.from($("assocChips").querySelectorAll(".chip")).forEach(c => {
+      c.classList.toggle("selected", c.getAttribute("data-value") === (state.intake.bedtimeAssoc || "nurse_to_sleep"));
+    });
+
+    // Feed windows
+    Array.from($("feedWindowChips").querySelectorAll(".chip")).forEach(c => {
+      c.classList.toggle("selected", (state.intake.feedWindows || []).includes(c.getAttribute("data-value")));
+    });
+
+    // Red flags
+    Array.from($("redFlagChips").querySelectorAll(".chip")).forEach(c => {
+      c.classList.toggle("selected", (state.intake.redFlags || ["none"]).includes(c.getAttribute("data-value")));
+    });
+  }
+
+  function saveIntakeFromUI(){
+    const i = state.intake;
+
+    i.babyName = $("babyName").value;
+    i.nightLabel = $("nightLabel").value;
+    i.ageMonths = $("ageMonths").value;
+    i.bedtimeTarget = $("bedtimeTarget").value;
+    i.wakeTarget = $("wakeTarget").value;
+    i.daycare = $("daycare").value;
+
+    i.sleepLocation = $("sleepLocation").value;
+    i.sleepGear = $("sleepGear").value;
+
+    i.nightWakes = $("nightWakes").value;
+    i.feedsPerNight = $("feedsPerNight").value;
+    i.feedDuration = $("feedDuration").value;
+    i.feedsFeelRequired = $("feedsFeelRequired").value;
+
+    i.nightsTried = $("nightsTried").value;
+    i.methodUsed = $("methodUsed").value;
+    i.longestCry = $("longestCry").value;
+    i.resets = $("resets").value;
+    i.stopReason = $("stopReason").value;
+
+    i.stylePref = $("stylePref").value;
+    i.maxCry = $("maxCry").value;
+    i.alertMode = $("alertMode").value;
+    i.wakeLockPref = $("wakeLockPref").value;
+
+    saveState(state);
+  }
+
+  // Demo button for quick testing
+  function loadDemo(){
+    state.intake = {
+      babyName: "Cam",
+      nightLabel: "Day 2",
+      ageMonths: "5.5",
+      bedtimeTarget: "19:30",
+      wakeTarget: "07:30",
+      daycare: "mixed",
+
+      bedtimeAssoc: "nurse_to_sleep",
+      sleepLocation: "crib",
+      sleepGear: "sack",
+
+      nightWakes: "2",
+      feedsPerNight: "2",
+      feedWindows: ["23:00-01:00", "03:00-05:00"],
+      feedDuration: "10",
+      feedsFeelRequired: "yes",
+
+      nightsTried: "1",
+      methodUsed: "ferber",
+      longestCry: "90",
+      resets: "often",
+      stopReason: "Too intense",
+
+      stylePref: "ferber",
+      maxCry: "90",
+      alertMode: "vibrate",
+      wakeLockPref: "on",
+      redFlags: ["none"]
+    };
+    saveState(state);
+    hydrateIntakeUI();
+    toast("Example loaded");
+  }
+
+  // -----------------------------
+  // Wiring step buttons
+  // -----------------------------
+  $("loadDemoBtn").addEventListener("click", loadDemo);
+
+  $("next1").addEventListener("click", () => {
+    saveIntakeFromUI();
+    if (!validateStep1()) return;
+    showStep(2);
+  });
+
+  $("back2").addEventListener("click", () => showStep(1));
+  $("next2").addEventListener("click", () => { saveIntakeFromUI(); showStep(3); });
+
+  $("back3").addEventListener("click", () => showStep(2));
+  $("next3").addEventListener("click", () => { saveIntakeFromUI(); showStep(4); });
+
+  $("back4").addEventListener("click", () => showStep(3));
+  $("next4").addEventListener("click", () => { saveIntakeFromUI(); showStep(5); });
+
+  $("back5").addEventListener("click", () => showStep(4));
+  $("generateBtn").addEventListener("click", () => {
+    saveIntakeFromUI();
+    if (!validateStep1()) { showStep(1); return; }
+    generatePlan();
+    // Move to plan view
+    $("intakeCard").classList.add("hidden");
+    $("planCard").classList.remove("hidden");
+    $("progressWrap").classList.add("hidden");
+  });
+
+  // Runner buttons
+  $("pauseBtn").addEventListener("click", togglePause);
+  $("didCheckinBtn").addEventListener("click", didCheckin);
+  $("babyAsleepBtn").addEventListener("click", babyAsleep);
+  $("resetBtn").addEventListener("click", resetSession);
+  $("endBtn").addEventListener("click", endSession);
+  $("exportBtn").addEventListener("click", exportLog);
+  $("wakeLockBtn").addEventListener("click", toggleWakeLock);
+  $("editPlanBtn").addEventListener("click", () => {
+    endSession();
+    $("progressWrap").classList.remove("hidden");
+    $("intakeCard").classList.remove("hidden");
+    $("planCard").classList.add("hidden");
+    showStep(1);
+  });
+
+  // Log clear
+  $("clearLogBtn").addEventListener("click", clearLog);
+
+  // -----------------------------
+  // Init
+  // -----------------------------
+  hydrateIntakeUI();
+  renderLog();
+
+  // If plan exists, show it
+  if (state.plan){
+    renderPlan();
+    $("intakeCard").classList.add("hidden");
+    $("planCard").classList.remove("hidden");
+    $("progressWrap").classList.add("hidden");
+  } else {
+    showStep(1);
+  }
+
+  // Resume session if running/paused
+  if (state.session.status === "running" || state.session.status === "paused"){
+    $("topSub").textContent = "Session running — keep this screen open";
+    $("progressWrap").classList.add("hidden");
+    $("intakeCard").classList.add("hidden");
+    $("planCard").classList.add("hidden");
+    $("runnerCard").classList.remove("hidden");
+    startTicking();
+
+    // Update script pill
+    if (state.plan){
+      $("checkinScriptText").textContent = state.plan.copy.checkinScript || "Keep it brief.";
+      $("scriptPill").textContent = (state.plan.meta.method === "cio") ? "no checks" : "30–60s";
+    }
+  } else {
+    updateRunnerUI();
+  }
+
+})();
+</script>
+</body>
+</html>
