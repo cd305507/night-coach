@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0B0C10" />
+<title>Night Coach</title>
+
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0B0C10;
+  --card:#141622;
+  --stroke:#ffffff14;
+  --text:#F4F6FF;
+  --muted:#A9AEFFB3;
+  --accent:#7C5CFF;
+  --accent2:#22D3EE;
+  --good:#4CE6A3;
+  --warn:#FFD36A;
+  --bad:#FF4D7D;
+  --r:18px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,system-ui,Segoe UI,Roboto,Helvetica,Arial;
+  background:linear-gradient(180deg,#07080B,#0B0C10);
+  color:var(--text);
+  padding:16px;
+}
+
+.wrap{max-width:760px;margin:auto}
+.card{
+  background:var(--card);
+  border:1px solid var(--stroke);
+  border-radius:var(--r);
+  padding:18px;
+  margin-bottom:14px;
+}
+h1,h2,h3{margin:0 0 8px}
+.small{font-size:13px;color:var(--muted)}
+
+input,select{
+  width:100%;
+  padding:13px;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background:#00000033;
+  color:var(--text);
+  font-size:15px;
+}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+
+.row{display:grid;gap:12px}
+@media(min-width:560px){.row.two{grid-template-columns:1fr 1fr}}
+
+.btn{
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid var(--stroke);
+  background:#00000033;
+  color:var(--text);
+  font-weight:700;
+}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.btn.danger{background:linear-gradient(135deg,var(--bad),#FF7A9E)}
+.btn.secondary{background:#00000055}
+
+.btnRow{display:flex;gap:10px;flex-wrap:wrap}
+
+.hidden{display:none}
+
+.timer{
+  font-size:56px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+
+.status.good{color:var(--good)}
+.status.warn{color:var(--warn)}
+.status.bad{color:var(--bad)}
+
+.log{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:12px;
+  white-space:pre-wrap;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<!-- INTAKE -->
+<div class="card" id="intake">
+  <h2>Personalized Intake</h2>
+
+  <div class="row two">
+    <div>
+      <label>Baby name</label>
+      <input id="babyName" placeholder="Cam">
+    </div>
+    <div>
+      <label>Age (months)</label>
+      <input id="age" placeholder="5.5">
+    </div>
+  </div>
+
+  <div class="row two" style="margin-top:12px">
+    <div>
+      <label>Current night feeds</label>
+      <select id="currentFeeds">
+        <option>0</option><option>1</option><option selected>2</option><option>3</option>
+      </select>
+    </div>
+    <div>
+      <label>Target feeds</label>
+      <select id="targetFeeds">
+        <option value="same">Keep same</option>
+        <option value="1" selected>1</option>
+        <option value="0">0</option>
+      </select>
+    </div>
+  </div>
+
+  <div style="margin-top:12px">
+    <label>Days to reach target feeds</label>
+    <input id="targetDays" placeholder="10">
+  </div>
+
+  <div class="row two" style="margin-top:12px">
+    <div>
+      <label>Nights attempted so far</label>
+      <input id="nightsTried" placeholder="1">
+    </div>
+    <div>
+      <label>Longest crying stretch (min)</label>
+      <input id="longestCry" placeholder="90">
+    </div>
+  </div>
+
+  <div class="btnRow" style="margin-top:16px">
+    <button class="btn primary" onclick="generatePlan()">Generate plan</button>
+  </div>
+</div>
+
+<!-- PLAN -->
+<div class="card hidden" id="plan">
+  <h2>Tonight’s Plan</h2>
+  <div class="small" id="planSummary"></div>
+
+  <div style="margin-top:14px">
+    <label>Check-in intervals (minutes)</label>
+    <input id="intervalsInput">
+    <div class="small">Recommended based on Ferber Day — you can edit.</div>
+  </div>
+
+  <div id="feedPlan" class="small" style="margin-top:12px"></div>
+
+  <div class="btnRow" style="margin-top:18px">
+    <button class="btn primary" onclick="startSession()">Start session</button>
+    <button class="btn secondary" onclick="showIntake()">Edit intake</button>
+  </div>
+</div>
+
+<!-- RUNNER -->
+<div class="card hidden" id="runner">
+  <h2>Session</h2>
+  <div class="timer" id="timer">00:00</div>
+  <div class="status good" id="status">WAIT</div>
+  <div class="small" id="nextCheck">Next check-in: —</div>
+
+  <div class="btnRow" style="margin-top:16px">
+    <button class="btn primary" onclick="logCheck()">Log check-in</button>
+    <button class="btn secondary" onclick="markAsleep()">Baby asleep</button>
+  </div>
+
+  <div class="btnRow" style="margin-top:10px">
+    <button class="btn secondary" id="pauseBtn" onclick="pauseResume()">Pause</button>
+    <button class="btn danger" onclick="resetTimer()">Reset</button>
+  </div>
+
+  <div class="btnRow hidden" id="asleepActions" style="margin-top:10px">
+    <button class="btn primary" onclick="newWake()">New wake</button>
+    <button class="btn danger" onclick="endSession()">End session</button>
+  </div>
+</div>
+
+<!-- LOG -->
+<div class="card">
+  <h3>Session Log</h3>
+  <div class="btnRow" style="margin-bottom:8px">
+    <button class="btn secondary" onclick="exportLog()">Export</button>
+    <button class="btn secondary" onclick="clearLog()">Clear</button>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+
+</div>
+
+<script>
+/* ---------- Ferber schedule ---------- */
+const FERBER = {
+  1:[3,5,10,10],
+  2:[5,10,12,12],
+  3:[10,12,15,15],
+  4:[12,15,17,17],
+  5:[15,17,20,20],
+  6:[17,20,25,25],
+  7:[20,25,30,30]
+};
+const getFerberIntervals = d => FERBER[Math.min(Math.max(d,1),7)];
+
+/* ---------- State ---------- */
+let plan={}, session={}, interval=null;
+
+/* ---------- Plan generation ---------- */
+function generatePlan(){
+  const nights = parseInt(nightsTried.value||0);
+  const ferberDay = Math.min(nights+1,7);
+  const intervals = getFerberIntervals(ferberDay);
+
+  plan = {
+    ferberDay,
+    intervals:[...intervals],
+    feeds:{
+      current:+currentFeeds.value,
+      target:targetFeeds.value==="same"?+currentFeeds.value:+targetFeeds.value,
+      days:+targetDays.value||10
+    }
+  };
+
+  intervalsInput.value = intervals.join(", ");
+  planSummary.innerText = `Ferber Day ${ferberDay}`;
+  feedPlan.innerText =
+    plan.feeds.current===plan.feeds.target
+      ? `Night feeds: maintain ${plan.feeds.current}.`
+      : `Reduce feeds ${plan.feeds.current} → ${plan.feeds.target} over ~${plan.feeds.days} days. Shorten or delay one feed every 2–3 nights.`;
+
+  intake.classList.add("hidden");
+  plan.classList.remove("hidden");
+}
+
+/* ---------- Navigation ---------- */
+function showIntake(){
+  plan.classList.add("hidden");
+  intake.classList.remove("hidden");
+}
+
+/* ---------- Session ---------- */
+function startSession(){
+  plan.intervals = intervalsInput.value.split(",").map(n=>+n.trim()).filter(Boolean);
+  session={start:Date.now(),idx:0,last:0,status:"running",log:[]};
+  plan.classList.add("hidden");
+  runner.classList.remove("hidden");
+  tick();
+  interval=setInterval(tick,500);
+}
+
+function tick(){
+  if(session.status!=="running") return;
+  const elapsed=Date.now()-session.start;
+  timer.innerText=new Date(elapsed).toISOString().substr(14,5);
+  const mins=plan.intervals[session.idx]||plan.intervals.at(-1);
+  const due=mins*60000-(elapsed-session.last);
+  nextCheck.innerText="Next check-in: "+(due<=0?"NOW":Math.ceil(due/1000)+"s");
+  status.innerText=due<=0?"CHECK-IN":"WAIT";
+  status.className="status "+(due<=0?"bad":"good");
+}
+
+function logCheck(){
+  session.log.push(`Check-in @ ${new Date().toLocaleTimeString()}`);
+  log.innerText=session.log.join("\n");
+  session.last=Date.now()-session.start;
+  session.idx++;
+}
+
+function markAsleep(){
+  session.status="asleep";
+  asleepActions.classList.remove("hidden");
+  status.innerText="ASLEEP";
+  status.className="status good";
+}
+
+function newWake(){
+  session.start=Date.now();
+  session.last=0;
+  session.idx=0;
+  session.status="running";
+  asleepActions.classList.add("hidden");
+}
+
+function pauseResume(){
+  if(session.status==="running"){
+    session.status="paused";
+    pauseBtn.innerText="Resume";
+  } else if(session.status==="paused"){
+    session.status="running";
+    pauseBtn.innerText="Pause";
+  }
+}
+
+function resetTimer(){
+  session.start=Date.now();
+  session.last=0;
+  session.idx=0;
+}
+
+function endSession(){
+  clearInterval(interval);
+  runner.classList.add("hidden");
+}
+
+/* ---------- Log ---------- */
+function exportLog(){
+  navigator.clipboard.writeText(session.log.join("\n"));
+}
+function clearLog(){
+  session.log=[];
+  log.innerText="";
+}
+</script>
+</body>
+</html>
